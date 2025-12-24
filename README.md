@@ -33,7 +33,7 @@
 
 ## Структура проекта
 
-'''
+```
 library_system/
 │
 ├── pom.xml                                 # Maven конфигурация
@@ -92,5 +92,4 @@ library_system/
 │       └── loans/                         
            ├── list.html                   
            └── form.html  
-'''                 
-
+```
