@@ -33,4 +33,64 @@
 
 ## Структура проекта
 
-[Структура проекта .txt](https://github.com/user-attachments/files/24331067/default.txt)
+'''
+library_system/
+│
+├── pom.xml                                 # Maven конфигурация
+│
+├── src/main/java/com/library/library_system/
+│   ├── LibrarySystemApplication.java       # Главный класс приложения
+│   │
+│   ├── controller/                         # Контроллеры
+│   │   ├── BookController.java             # Контроллер книг
+│   │   ├── ReaderController.java           # Контроллер читателей
+│   │   ├── LibrarianController.java        # Контроллер библиотекарей
+│   │   ├── BookLoanController.java         # Контроллер выдач книг
+│   │   └── MainController.java             # Главный контроллер
+│   │
+│   ├── entity/                             # Сущности JPA
+│   │   ├── Book.java                       # Сущность книги
+│   │   ├── Reader.java                     # Сущность читателя
+│   │   ├── Librarian.java                  # Сущность библиотекаря
+│   │   └── BookLoan.java                   # Сущность выдачи книги
+│   │
+│   ├── repository/                         # Репозитории Spring Data JPA
+│   │   ├── BookRepository.java             # Репозиторий книг
+│   │   ├── ReaderRepository.java           # Репозиторий читателей
+│   │   ├── LibrarianRepository.java        # Репозиторий библиотекарей
+│   │   └── BookLoanRepository.java         # Репозиторий выдач
+│   │
+│   └── service/                            # Сервисный слой
+│       ├── BookService.java                # Сервис книг
+│       ├── ReaderService.java              # Сервис читателей
+│       ├── LibrarianService.java           # Сервис библиотекарей
+│       └── BookLoanService.java            # Сервис выдач
+│
+├── src/main/resources/
+│   ├── application.properties              # Конфигурация Spring Boot
+│   │ 
+│   │
+│   ├── static/                             # Статические ресурсы
+│   │  
+│   │
+│   └── templates/                          
+│       ├── index.html                      
+│       ├── dashboard.html                  
+│       │
+│       ├── books/                          
+│       │   ├── list.html                  
+│       │   └── form.html                  
+│       │
+│       ├── readers/                        
+│       │   ├── list.html                   
+│       │   └── form.html                   
+│       │
+│       ├── librarians/                    
+│       │   ├── list.html                   
+│       │   └── form.html                   
+│       │
+│       └── loans/                         
+           ├── list.html                   
+           └── form.html  
+'''                 
+
