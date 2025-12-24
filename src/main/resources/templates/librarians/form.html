@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${librarian.id != null ? 'Редактирование библиотекаря' : 'Добавление библиотекаря'}">Форма библиотекаря</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        .invalid-feedback {
+            display: block;
+        }
+        .form-control.is-invalid {
+            border-color: #dc3545;
+        }
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+        <a class="navbar-brand" href="/">Библиотека</a>
+        <div class="navbar-nav">
+            <a class="nav-link" href="/books">Книги</a>
+            <a class="nav-link" href="/readers">Читатели</a>
+            <a class="nav-link active" href="/librarians">Библиотекари</a>
+            <a class="nav-link" href="/loans">Выдачи</a>
+        </div>
+    </div>
+</nav>
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header" th:classappend="${librarian.id != null ? 'bg-warning' : 'bg-success'}">
+                    <h4 class="mb-0 text-white">
+                        <i class="bi" th:classappend="${librarian.id != null ? 'bi-pencil' : 'bi-person-plus'}"></i>
+                        <span th:text="${librarian.id != null ? 'Редактирование библиотекаря' : 'Добавление нового библиотекаря'}"></span>
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <!-- Глобальные сообщения -->
+                    <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+                        <i class="bi bi-check-circle"></i> <span th:text="${successMessage}"></span>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="bi bi-exclamation-triangle"></i> <span th:text="${errorMessage}"></span>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+
+                    <form th:action="${librarian.id != null ? '/librarians/update/' + librarian.id : '/librarians'}"
+                          th:object="${librarian}" method="post">
+
+                        <!-- Табельный номер -->
+                        <div class="mb-3">
+                            <label for="librarianNumber" class="form-label">
+                                <i class="bi bi-person-badge"></i> Табельный номер *
+                            </label>
+                            <input type="text"
+                                   class="form-control"
+                                   id="librarianNumber"
+                                   th:field="*{librarianNumber}"
+                                   th:classappend="${#fields.hasErrors('librarianNumber') ? 'is-invalid' : ''}"
+                                   placeholder="Например: L001"
+                                   required>
+                            <div class="form-text">Уникальный номер библиотекаря</div>
+                            <div th:if="${#fields.hasErrors('librarianNumber')}" class="text-danger">
+                                <i class="bi bi-exclamation-circle"></i>
+                                <span th:errors="*{librarianNumber}"></span>
+                            </div>
+                        </div>
+
+                        <!-- ФИО -->
+                        <div class="mb-3">
+                            <label for="fullName" class="form-label">
+                                <i class="bi bi-person"></i> ФИО библиотекаря *
+                            </label>
+                            <input type="text"
+                                   class="form-control"
+                                   id="fullName"
+                                   th:field="*{fullName}"
+                                   th:classappend="${#fields.hasErrors('fullName') ? 'is-invalid' : ''}"
+                                   placeholder="Например: Иванова Мария Сергеевна"
+                                   required>
+                            <div th:if="${#fields.hasErrors('fullName')}" class="text-danger">
+                                <i class="bi bi-exclamation-circle"></i>
+                                <span th:errors="*{fullName}"></span>
+                            </div>
+                        </div>
+
+                        <!-- Должность -->
+                        <div class="mb-3">
+                            <label for="position" class="form-label">
+                                <i class="bi bi-briefcase"></i> Должность
+                            </label>
+                            <input type="text"
+                                   class="form-control"
+                                   id="position"
+                                   th:field="*{position}"
+                                   placeholder="Например: Старший библиотекарь">
+                            <div class="form-text">По умолчанию: "Библиотекарь"</div>
+                        </div>
+
+                        <!-- Кнопки -->
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="/librarians" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Отмена
+                            </a>
+                            <button type="submit" class="btn" th:classappend="${librarian.id != null ? 'btn-warning' : 'btn-success'}">
+                                <i class="bi" th:classappend="${librarian.id != null ? 'bi-check-circle' : 'bi-save'}"></i>
+                                <span th:text="${librarian.id != null ? 'Обновить библиотекаря' : 'Сохранить библиотекаря'}"></span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Информационная панель -->
+            <div class="alert alert-info mt-3">
+                <h6><i class="bi bi-info-circle"></i> Правила заполнения:</h6>
+                <ul class="mb-0">
+                    <li>Табельный номер должен быть уникальным</li>
+                    <li>При редактировании нельзя использовать номер другого библиотекаря</li>
+                    <li>Поле "ФИО" обязательно для заполнения</li>
+                    <li>Если должность не указана, будет установлено значение "Библиотекарь"</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Автоматическое скрытие сообщений через 5 секунд
+    setTimeout(function() {
+        const alerts = document.querySelectorAll('.alert');
+        alerts.forEach(alert => {
+            const bsAlert = new bootstrap.Alert(alert);
+            bsAlert.close();
+        });
+    }, 5000);
+
+    // Фокус на первом поле
+    document.addEventListener('DOMContentLoaded', function() {
+        const librarianNumberInput = document.getElementById('librarianNumber');
+        if (librarianNumberInput) {
+            librarianNumberInput.focus();
+        }
+    });
+</script>
+</body>
+</html>

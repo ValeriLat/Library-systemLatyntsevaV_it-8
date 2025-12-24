@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Оформление выдачи книги</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+        <a class="navbar-brand" href="/">Библиотека</a>
+        <div class="navbar-nav">
+            <a class="nav-link" href="/books">Книги</a>
+            <a class="nav-link" href="/readers">Читатели</a>
+            <a class="nav-link" href="/librarians">Библиотекари</a>
+            <a class="nav-link active" href="/loans">Выдачи</a>
+        </div>
+    </div>
+</nav>
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="bi bi-journal-plus"></i> Оформление выдачи книги</h4>
+                </div>
+                <div class="card-body">
+                    <form th:action="@{/loans}" th:object="${loan}" method="post">
+
+                        <!-- Выбор книги -->
+                        <div class="mb-3">
+                            <label for="book" class="form-label">
+                                <i class="bi bi-book"></i> Выберите книку *
+                            </label>
+                            <select class="form-select" id="book" th:field="*{book}" required>
+                                <option value="">-- Выберите книгу --</option>
+                                <option th:each="book : ${books}"
+                                        th:value="${book.id}"
+                                        th:text="${book.title + ' (' + book.author + ')'}">
+                                </option>
+                            </select>
+                            <div th:if="${#fields.hasErrors('book')}" class="text-danger">
+                                <i class="bi bi-exclamation-circle"></i>
+                                <span th:errors="*{book}"></span>
+                            </div>
+                        </div>
+
+                        <!-- Выбор читателя -->
+                        <div class="mb-3">
+                            <label for="reader" class="form-label">
+                                <i class="bi bi-person"></i> Выберите читателя *
+                            </label>
+                            <select class="form-select" id="reader" th:field="*{reader}" required>
+                                <option value="">-- Выберите читателя --</option>
+                                <option th:each="reader : ${readers}"
+                                        th:value="${reader.id}"
+                                        th:text="${reader.fullName + ' (билет: ' + reader.ticketNumber + ')'}">
+                                </option>
+                            </select>
+                            <div th:if="${#fields.hasErrors('reader')}" class="text-danger">
+                                <i class="bi bi-exclamation-circle"></i>
+                                <span th:errors="*{reader}"></span>
+                            </div>
+                        </div>
+
+                        <!-- Выбор библиотекаря -->
+                        <div class="mb-3">
+                            <label for="librarian" class="form-label">
+                                <i class="bi bi-person-badge"></i> Выберите библиотекаря *
+                            </label>
+                            <select class="form-select" id="librarian" th:field="*{librarian}" required>
+                                <option value="">-- Выберите библиотекаря --</option>
+                                <option th:each="librarian : ${librarians}"
+                                        th:value="${librarian.id}"
+                                        th:text="${librarian.fullName + ' (' + librarian.position + ')'}">
+                                </option>
+                            </select>
+                            <div th:if="${#fields.hasErrors('librarian')}" class="text-danger">
+                                <i class="bi bi-exclamation-circle"></i>
+                                <span th:errors="*{librarian}"></span>
+                            </div>
+                        </div>
+
+                        <!-- Дата выдачи -->
+                        <div class="mb-3">
+                            <label for="loanDate" class="form-label">
+                                <i class="bi bi-calendar-check"></i> Дата выдачи *
+                            </label>
+                            <input type="date" class="form-control" id="loanDate" th:field="*{loanDate}" required>
+                            <div class="form-text">По умолчанию устанавливается текущая дата</div>
+                            <div th:if="${#fields.hasErrors('loanDate')}" class="text-danger">
+                                <i class="bi bi-exclamation-circle"></i>
+                                <span th:errors="*{loanDate}"></span>
+                            </div>
+                        </div>
+
+                        <!-- Срок возврата -->
+                        <div class="mb-3">
+                            <label for="dueDate" class="form-label">
+                                <i class="bi bi-calendar-x"></i> Срок возврата *
+                            </label>
+                            <input type="date" class="form-control" id="dueDate" th:field="*{dueDate}" required>
+                            <div class="form-text">Рекомендуемый срок: 14 дней с даты выдачи</div>
+                            <div th:if="${#fields.hasErrors('dueDate')}" class="text-danger">
+                                <i class="bi bi-exclamation-circle"></i>
+                                <span th:errors="*{dueDate}"></span>
+                            </div>
+                        </div>
+
+                        <!-- Кнопки -->
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="/loans" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Отмена
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-check-circle"></i> Оформить выдачу
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Информация -->
+            <div class="alert alert-info mt-3">
+                <h6><i class="bi bi-info-circle"></i> Правила выдачи книг:</h6>
+                <ul class="mb-0">
+                    <li>Один читатель может иметь не более 3 книг одновременно</li>
+                    <li>Стандартный срок выдачи: 14 календарных дней</li>
+                    <li>Книгу можно продлить, если на нее нет очереди</li>
+                    <li>При потере книги читатель обязан возместить ее стоимость</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Установка дат по умолчанию
+    document.addEventListener('DOMContentLoaded', function() {
+        const today = new Date().toISOString().split('T')[0];
+        const twoWeeksLater = new Date();
+        twoWeeksLater.setDate(twoWeeksLater.getDate() + 14);
+        const dueDate = twoWeeksLater.toISOString().split('T')[0];
+
+        if (!document.getElementById('loanDate').value) {
+            document.getElementById('loanDate').value = today;
+        }
+        if (!document.getElementById('dueDate').value) {
+            document.getElementById('dueDate').value = dueDate;
+        }
+    });
+</script>
+</body>
+</html>

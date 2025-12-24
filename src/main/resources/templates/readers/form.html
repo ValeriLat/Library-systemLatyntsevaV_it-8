@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${reader.id != null ? 'Редактирование читателя' : 'Добавление читателя'}">Форма читателя</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        .invalid-feedback {
+            display: block;
+        }
+        .form-control.is-invalid {
+            border-color: #dc3545;
+        }
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+        <a class="navbar-brand" href="/">Библиотека</a>
+        <div class="navbar-nav">
+            <a class="nav-link" href="/books">Книги</a>
+            <a class="nav-link active" href="/readers">Читатели</a>
+            <a class="nav-link" href="/librarians">Библиотекари</a>
+            <a class="nav-link" href="/loans">Выдачи</a>
+        </div>
+    </div>
+</nav>
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header" th:classappend="${reader.id != null ? 'bg-warning' : 'bg-success'}">
+                    <h4 class="mb-0 text-white">
+                        <i class="bi" th:classappend="${reader.id != null ? 'bi-pencil' : 'bi-person-plus'}"></i>
+                        <span th:text="${reader.id != null ? 'Редактирование читателя' : 'Добавление нового читателя'}"></span>
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <!-- Глобальные сообщения -->
+                    <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+                        <i class="bi bi-check-circle"></i> <span th:text="${successMessage}"></span>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="bi bi-exclamation-triangle"></i> <span th:text="${errorMessage}"></span>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+
+                    <form th:action="${reader.id != null ? '/readers/update/' + reader.id : '/readers'}"
+                          th:object="${reader}" method="post">
+
+                        <!-- Номер билета -->
+                        <div class="mb-3">
+                            <label for="ticketNumber" class="form-label">
+                                <i class="bi bi-person-badge"></i> Номер читательского билета *
+                            </label>
+                            <input type="text"
+                                   class="form-control"
+                                   id="ticketNumber"
+                                   th:field="*{ticketNumber}"
+                                   th:classappend="${#fields.hasErrors('ticketNumber')} ? 'is-invalid' : ''"
+                                   placeholder="Например: 123456"
+                                   required>
+                            <div class="form-text">Уникальный номер билета</div>
+                            <div th:if="${#fields.hasErrors('ticketNumber')}" class="text-danger">
+                                <i class="bi bi-exclamation-circle"></i>
+                                <span th:errors="*{ticketNumber}"></span>
+                            </div>
+                        </div>
+
+                        <!-- ФИО -->
+                        <div class="mb-3">
+                            <label for="fullName" class="form-label">
+                                <i class="bi bi-person"></i> ФИО читателя *
+                            </label>
+                            <input type="text"
+                                   class="form-control"
+                                   id="fullName"
+                                   th:field="*{fullName}"
+                                   th:classappend="${#fields.hasErrors('fullName')} ? 'is-invalid' : ''"
+                                   placeholder="Например: Иванов Иван Иванович"
+                                   required>
+                            <div th:if="${#fields.hasErrors('fullName')}" class="text-danger">
+                                <i class="bi bi-exclamation-circle"></i>
+                                <span th:errors="*{fullName}"></span>
+                            </div>
+                        </div>
+
+                        <!-- Телефон -->
+                        <div class="mb-3">
+                            <label for="phoneNumber" class="form-label">
+                                <i class="bi bi-telephone"></i> Номер телефона *
+                            </label>
+                            <input type="tel"
+                                   class="form-control"
+                                   id="phoneNumber"
+                                   th:field="*{phoneNumber}"
+                                   th:classappend="${#fields.hasErrors('phoneNumber')} ? 'is-invalid' : ''"
+                                   placeholder="Например: +7(912)345-67-89"
+                                   required
+                                   pattern="^\+7\(\d{3}\)\d{3}-\d{2}-\d{2}$">
+                            <div class="form-text">Формат: +7(XXX)XXX-XX-XX</div>
+                            <div th:if="${#fields.hasErrors('phoneNumber')}" class="text-danger">
+                                <i class="bi bi-exclamation-circle"></i>
+                                <span th:errors="*{phoneNumber}"></span>
+                            </div>
+                        </div>
+
+                        <!-- Дата регистрации -->
+                        <div class="mb-3">
+                            <label for="registrationDate" class="form-label">
+                                <i class="bi bi-calendar"></i> Дата регистрации
+                            </label>
+                            <input type="date" class="form-control" id="registrationDate" th:field="*{registrationDate}">
+                        </div>
+
+                        <!-- Кнопки -->
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="/readers" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Отмена
+                            </a>
+                            <button type="submit" class="btn" th:classappend="${reader.id != null ? 'btn-warning' : 'btn-success'}">
+                                <i class="bi" th:classappend="${reader.id != null ? 'bi-check-circle' : 'bi-save'}"></i>
+                                <span th:text="${reader.id != null ? 'Обновить читателя' : 'Сохранить читателя'}"></span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Информационная панель -->
+            <div class="alert alert-info mt-3">
+                <h6><i class="bi bi-info-circle"></i> Важная информация:</h6>
+                <ul class="mb-0">
+                    <li>Номер читательского билета должен быть уникальным</li>
+                    <li>При редактировании нельзя использовать номер билета другого читателя</li>
+                    <li>Номер телефона должен быть в формате +7(XXX)XXX-XX-XX</li>
+                    <li>Телефон также должен быть уникальным для каждого читателя</li>
+                    <li>Поля, отмеченные *, обязательны для заполнения</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Автоматическое скрытие сообщений через 5 секунд
+    setTimeout(function() {
+        const alerts = document.querySelectorAll('.alert');
+        alerts.forEach(alert => {
+            const bsAlert = new bootstrap.Alert(alert);
+            bsAlert.close();
+        });
+    }, 5000);
+
+    // Автоматическое форматирование телефона
+    document.getElementById('phoneNumber').addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\D/g, '');
+
+        if (value.startsWith('7') || value.startsWith('8')) {
+            value = value.substring(1);
+        }
+
+        if (value.length > 0) {
+            let formatted = '+7(';
+
+            if (value.length > 0) {
+                formatted += value.substring(0, Math.min(3, value.length));
+            }
+
+            if (value.length > 3) {
+                formatted += ')' + value.substring(3, Math.min(6, value.length));
+            }
+
+            if (value.length > 6) {
+                formatted += '-' + value.substring(6, Math.min(8, value.length));
+            }
+
+            if (value.length > 8) {
+                formatted += '-' + value.substring(8, Math.min(10, value.length));
+            }
+
+            e.target.value = formatted;
+        }
+    });
+
+    // Валидация перед отправкой
+    document.querySelector('form').addEventListener('submit', function(e) {
+        const phoneInput = document.getElementById('phoneNumber');
+        const phonePattern = /^\+7\(\d{3}\)\d{3}-\d{2}-\d{2}$/;
+
+        if (!phonePattern.test(phoneInput.value)) {
+            e.preventDefault();
+            alert('Пожалуйста, введите номер телефона в формате +7(XXX)XXX-XX-XX');
+            phoneInput.focus();
+            return false;
+        }
+
+        return true;
+    });
+</script>
+</body>
+</html>

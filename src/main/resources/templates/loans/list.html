@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Выдачи книг - Библиотека</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+        <a class="navbar-brand" href="/">Библиотека</a>
+        <div class="navbar-nav">
+            <a class="nav-link" href="/books">Книги</a>
+            <a class="nav-link" href="/readers">Читатели</a>
+            <a class="nav-link" href="/librarians">Библиотекари</a>
+            <a class="nav-link active" href="/loans">Выдачи</a>
+        </div>
+    </div>
+</nav>
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-book"></i> Управление выдачами книг</h2>
+        <div>
+            <a href="/" class="btn btn-secondary"><i class="bi bi-house"></i> На главную</a>
+            <a href="/loans/new" class="btn btn-primary"><i class="bi bi-plus-circle"></i> Новая выдача</a>
+        </div>
+    </div>
+
+    <!-- Сообщения -->
+    <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle"></i> <span th:text="${successMessage}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle"></i> <span th:text="${errorMessage}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <!-- ПОИСК ВЫДАЧ - ИСПРАВЛЕННЫЙ -->
+    <div class="card mb-4">
+        <div class="card-header bg-light">
+            <h5 class="mb-0"><i class="bi bi-search"></i> Поиск выдач</h5>
+        </div>
+        <div class="card-body">
+            <!-- ВАЖНО: action ведет на /loans/search -->
+            <form th:action="@{/loans/search}" method="get" class="row g-2">
+                <div class="col-md-9">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-search"></i></span>
+                        <input type="text"
+                               name="keyword"
+                               class="form-control"
+                               placeholder="Введите название книги, имя читателя или библиотекаря..."
+                               th:value="${searchKeyword}">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-search"></i> Найти
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+            <!-- Фильтры статусов -->
+            <div class="mt-3">
+                <div class="d-flex flex-wrap gap-2">
+                    <a th:href="@{/loans}"
+                       class="btn btn-sm"
+                       th:classappend="${activeFilter == 'all' or activeFilter == null} ? 'btn-primary' : 'btn-outline-primary'">
+                        <i class="bi bi-list"></i> Все выдачи
+                        <span class="badge bg-light text-dark ms-1" th:text="${loans.size()}">0</span>
+                    </a>
+                    <a th:href="@{/loans/active}"
+                       class="btn btn-sm"
+                       th:classappend="${activeFilter == 'active'} ? 'btn-warning' : 'btn-outline-warning'">
+                        <i class="bi bi-clock"></i> Активные
+                        <span class="badge bg-light text-dark ms-1" th:text="${activeLoans != null ? activeLoans.size() : 0}">0</span>
+                    </a>
+                    <a th:href="@{/loans/overdue}"
+                       class="btn btn-sm"
+                       th:classappend="${activeFilter == 'overdue'} ? 'btn-danger' : 'btn-outline-danger'">
+                        <i class="bi bi-exclamation-triangle"></i> Просроченные
+                        <span class="badge bg-light text-dark ms-1" th:text="${overdueLoans != null ? overdueLoans.size() : 0}">0</span>
+                    </a>
+                    <a th:href="@{/loans/returned}"
+                       class="btn btn-sm"
+                       th:classappend="${activeFilter == 'returned'} ? 'btn-secondary' : 'btn-outline-secondary'">
+                        <i class="bi bi-check-circle"></i> Возвращенные
+                        <span class="badge bg-light text-dark ms-1" th:text="${returnedCount != null ? returnedCount : 0}">0</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Показать результаты поиска -->
+            <div th:if="${searchKeyword != null and !searchKeyword.isEmpty()}" class="mt-3">
+                <div class="alert alert-info p-2">
+                    <i class="bi bi-info-circle"></i>
+                    Результаты поиска по запросу:
+                    <strong>"<span th:text="${searchKeyword}"></span>"</strong>
+                    <a th:href="@{/loans}" class="btn btn-sm btn-outline-secondary ms-3">
+                        <i class="bi bi-x-circle"></i> Сбросить поиск
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Статистика -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card text-center border-primary">
+                <div class="card-body">
+                    <h6 class="card-title text-muted"><i class="bi bi-list"></i> Всего выдач</h6>
+                    <h3 class="text-primary">[[${loans.size()}]]</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center border-warning">
+                <div class="card-body">
+                    <h6 class="card-title text-muted"><i class="bi bi-clock"></i> Активные выдачи</h6>
+                    <h3 class="text-warning" th:text="${activeLoans != null ? activeLoans.size() : 0}">0</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center border-danger">
+                <div class="card-body">
+                    <h6 class="card-title text-muted"><i class="bi bi-exclamation-triangle"></i> Просроченные</h6>
+                    <h3 class="text-danger" th:text="${overdueLoans != null ? overdueLoans.size() : 0}">0</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Список выдач -->
+    <div class="card">
+        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+                <i class="bi bi-table"></i>
+                <span th:if="${searchKeyword != null and !searchKeyword.isEmpty()}">Результаты поиска</span>
+                <span th:if="${searchKeyword == null or searchKeyword.isEmpty()}">Список выдач книг</span>
+                <span class="badge bg-secondary ms-2" th:text="${loans.size()}">0</span>
+            </h5>
+            <small class="text-muted">
+                <span th:if="${activeFilter != null}">
+                    Фильтр:
+                    <span th:switch="${activeFilter}">
+                        <span th:case="'active'" class="badge bg-warning">Активные</span>
+                        <span th:case="'overdue'" class="badge bg-danger">Просроченные</span>
+                        <span th:case="'returned'" class="badge bg-secondary">Возвращенные</span>
+                        <span th:case="'all'" class="badge bg-primary">Все</span>
+                    </span>
+                </span>
+            </small>
+        </div>
+
+        <div class="card-body p-0">
+            <div th:if="${loans != null and !loans.empty}">
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped mb-0">
+                        <thead class="table-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th>Книга</th>
+                            <th>Читатель</th>
+                            <th>Библиотекарь</th>
+                            <th>Дата выдачи</th>
+                            <th>Срок возврата</th>
+                            <th>Дата возврата</th>
+                            <th>Статус</th>
+                            <th class="text-center">Действия</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="loan : ${loans}">
+                            <td th:text="${loan.id}"></td>
+                            <td>
+                                <div th:if="${loan.book != null}">
+                                    <strong th:text="${loan.book.title}"></strong><br>
+                                    <small class="text-muted" th:text="${loan.book.author}"></small>
+                                </div>
+                                <div th:if="${loan.book == null}">
+                                    <span class="text-danger">Книга удалена</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div th:if="${loan.reader != null}">
+                                    <span th:text="${loan.reader.fullName}"></span><br>
+                                    <small class="text-muted" th:text="'ID: ' + ${loan.reader.id}"></small>
+                                </div>
+                                <div th:if="${loan.reader == null}">
+                                    <span class="text-danger">Читатель удален</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div th:if="${loan.librarian != null}">
+                                    <span th:text="${loan.librarian.fullName}"></span><br>
+                                    <small class="text-muted" th:text="${loan.librarian.position}"></small>
+                                </div>
+                                <div th:if="${loan.librarian == null}">
+                                    <span class="text-danger">Библиотекарь удален</span>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge bg-primary" th:text="${#temporals.format(loan.loanDate, 'dd.MM.yyyy')}"></span>
+                            </td>
+                            <td>
+                                <span class="badge bg-info" th:text="${#temporals.format(loan.dueDate, 'dd.MM.yyyy')}"></span>
+                            </td>
+                            <td>
+                                <span th:if="${loan.returnDate != null}" class="badge bg-success" th:text="${#temporals.format(loan.returnDate, 'dd.MM.yyyy')}"></span>
+                                <span th:if="${loan.returnDate == null}" class="badge bg-secondary">Не возвращена</span>
+                            </td>
+                            <td>
+                                <span th:if="${loan.returnDate != null}" class="badge bg-secondary">
+                                    <i class="bi bi-check-circle"></i> Возвращена
+                                </span>
+                                <span th:if="${loan.returnDate == null and loan.dueDate.isBefore(T(java.time.LocalDate).now())}"
+                                      class="badge bg-danger">
+                                    <i class="bi bi-exclamation-triangle"></i> Просрочена
+                                </span>
+                                <span th:if="${loan.returnDate == null and loan.dueDate.isAfter(T(java.time.LocalDate).now())}"
+                                      class="badge bg-success">
+                                    <i class="bi bi-clock"></i> Активна
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <a th:if="${loan.returnDate == null}"
+                                       th:href="@{/loans/return/{id}(id=${loan.id})}"
+                                       class="btn btn-outline-success"
+                                       onclick="return confirm('Подтвердить возврат книги?')">
+                                        <i class="bi bi-check-lg"></i> Вернуть
+                                    </a>
+                                    <a th:href="@{/loans/delete/{id}(id=${loan.id})}"
+                                       class="btn btn-outline-danger"
+                                       onclick="return confirm('Удалить запись о выдаче?')">
+                                        <i class="bi bi-trash"></i> Удалить
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Если выдач нет -->
+            <div th:if="${loans == null or loans.empty}" class="text-center py-5">
+                <div class="py-5">
+                    <i class="bi bi-book" style="font-size: 4rem; color: #ccc;"></i>
+                    <h5 class="mt-3">
+                        <span th:if="${searchKeyword != null}">
+                            Выдачи не найдены
+                        </span>
+                        <span th:if="${searchKeyword == null}">
+                            Нет записей о выдаче книг
+                        </span>
+                    </h5>
+                    <p class="text-muted" th:if="${searchKeyword != null}">
+                        По запросу "<span th:text="${searchKeyword}"></span>" ничего не найдено
+                    </p>
+                    <p class="text-muted" th:if="${searchKeyword == null}">
+                        Добавьте первую выдачу книги
+                    </p>
+                    <a href="/loans/new" class="btn btn-primary mt-2">
+                        <i class="bi bi-plus-circle"></i> Новая выдача
+                    </a>
+                    <a th:href="@{/loans}" class="btn btn-outline-secondary mt-2" th:if="${searchKeyword != null}">
+                        <i class="bi bi-x-circle"></i> Сбросить поиск
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Статистика внизу таблицы -->
+        <div class="card-footer">
+            <div class="row">
+                <div class="col-md-4 text-center">
+                    <small class="text-muted">
+                        <i class="bi bi-list"></i> Всего выдач: <strong th:text="${loans.size()}">0</strong>
+                    </small>
+                </div>
+                <div class="col-md-4 text-center">
+                    <small class="text-muted" th:if="${searchKeyword != null}">
+                        <i class="bi bi-search"></i> Поиск: "<span th:text="${searchKeyword}"></span>"
+                    </small>
+                    <small class="text-muted" th:if="${searchKeyword == null}">
+                        <i class="bi bi-filter"></i> Фильтр:
+                        <span th:switch="${activeFilter}">
+                            <span th:case="'active'" class="text-warning">Активные</span>
+                            <span th:case="'overdue'" class="text-danger">Просроченные</span>
+                            <span th:case="'returned'" class="text-secondary">Возвращенные</span>
+                            <span th:case="'all'" class="text-primary">Все</span>
+                            <span th:case="null" class="text-primary">Все</span>
+                        </span>
+                    </small>
+                </div>
+                <div class="col-md-4 text-center">
+                    <a th:href="@{/loans}" class="btn btn-sm btn-outline-secondary">
+                        <i class="bi bi-arrow-clockwise"></i> Обновить список
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Автоматическое скрытие сообщений через 5 секунд
+    setTimeout(function() {
+        const alerts = document.querySelectorAll('.alert');
+        alerts.forEach(alert => {
+            const bsAlert = new bootstrap.Alert(alert);
+            bsAlert.close();
+        });
+    }, 5000);
+
+    // Фокус на поле поиска при загрузке страницы
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.querySelector('input[name="keyword"]');
+        if (searchInput && !searchInput.value) {
+            searchInput.focus();
+        }
+    });
+</script>
+</body>
+</html>
